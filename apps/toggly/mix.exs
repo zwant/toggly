@@ -12,6 +12,7 @@ defmodule Toggly.Mixfile do
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
       start_permanent: Mix.env == :prod,
+      dialyzer: [plt_add_deps: :transitive],
       aliases: aliases(),
       deps: deps()
     ]
@@ -23,7 +24,7 @@ defmodule Toggly.Mixfile do
   def application do
     [
       mod: {Toggly.Application, []},
-      extra_applications: [:logger, :runtime_tools, :cachex]
+      extra_applications: [:logger, :runtime_tools, :cachex, :calendar]
     ]
   end
 
@@ -38,7 +39,10 @@ defmodule Toggly.Mixfile do
     [
       {:postgrex, ">= 0.0.0"},
       {:ecto, "~> 2.1"},
-      {:cachex, "~> 2.1"}
+      {:cachex, "~> 2.1"},
+      {:poison, "~> 3.0"},
+      {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false},
+      {:calendar, "~> 0.17.2"}
     ]
   end
 

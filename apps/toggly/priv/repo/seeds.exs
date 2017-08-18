@@ -19,10 +19,32 @@ Repo.delete_all FeatureConfiguration
 
 %Feature{label: "test"}
 |> Ecto.Changeset.change
-|> Ecto.Changeset.put_assoc(:configuration, FeatureConfiguration.changeset(%FeatureConfiguration{}, %{is_active: true}))
+|> Ecto.Changeset.put_assoc(:configuration, FeatureConfiguration.changeset(%FeatureConfiguration{}, %{is_active: true,
+                                                                                                      strategies: ["Username", "IPAddress", "Timestamp"],
+                                                                                                      parameters: %{"Username":
+                                                                                                                      %{"matches_exactly": "svante"},
+                                                                                                                    "Timestamp":
+                                                                                                                      %{"after": "2015-01-23T23:50:07Z"}}}))
 |> Repo.insert!
 
 %Feature{label: "test2"}
 |> Ecto.Changeset.change
 |> Ecto.Changeset.put_assoc(:configuration, FeatureConfiguration.changeset(%FeatureConfiguration{}, %{is_active: false}))
+|> Repo.insert!
+
+%Feature{label: "active_2016"}
+|> Ecto.Changeset.change
+|> Ecto.Changeset.put_assoc(:configuration, FeatureConfiguration.changeset(%FeatureConfiguration{}, %{is_active: true,
+                                                                                                      strategies: ["Timestamp"],
+                                                                                                      parameters: %{"Timestamp":
+                                                                                                                      %{"between":
+                                                                                                                          %{"first": "2016-01-01T00:00:00Z",
+                                                                                                                            "second": "2016-12-31T23:59:59Z"}}}}))
+|> Repo.insert!
+
+%Feature{label: "only_svante"}
+|> Ecto.Changeset.change
+|> Ecto.Changeset.put_assoc(:configuration, FeatureConfiguration.changeset(%FeatureConfiguration{}, %{is_active: true,
+                                                                                                      strategies: ["Username"],
+                                                                                                      parameters: %{"Username": %{"matches_exactly": "svante"}}}))
 |> Repo.insert!

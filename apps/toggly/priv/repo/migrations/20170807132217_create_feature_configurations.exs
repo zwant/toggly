@@ -6,6 +6,8 @@ defmodule Toggly.Repo.Migrations.CreateFeatureConfigurations do
       add :id, :binary_id, primary_key: true
       add :is_active, :boolean, default: false, null: false
       add :feature_id, references(:features, on_delete: :delete_all, type: :binary_id)
+      add :strategies, {:array, :string}
+      add :parameters, :map
 
       timestamps()
     end

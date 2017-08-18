@@ -5,9 +5,44 @@ defmodule Toggly.Features do
 
   import Ecto.Query, warn: false
   alias Toggly.Repo
+  require Logger
+  use Toggly.Features.Strategies
+  alias Toggly.Features.Strategies
 
-  alias Toggly.Features.{Feature, FeatureConfiguration}
+  alias Toggly.Features.{Feature, FeatureConfiguration, Request}
 
+  defmodule Logic do
+    alias Toggly.Features
+
+    def is_enabled?(feature_label) do
+      feature = Features.get_feature_from_cache(feature_label)
+      feature_active?(feature.configuration)
+    end
+
+    def is_enabled?(feature_label, request = %Request{}) do
+      feature = Features.get_feature_from_cache(feature_label)
+      request_feature_enabled?(feature.configuration, request)
+    end
+
+    defp request_feature_enabled?(configuration, request = %Request{}) do
+      strategies = get_strategies_for_configuration(configuration)
+      log_active_strats(configuration, strategies)
+
+      feature_active?(configuration)
+        && Enum.all?(strategies, fn str -> Strategies.ActivationStrategy.evaluate(str, request, configuration.parameters) end)
+    end
+
+    defp log_active_strats(config, strategies) do
+      strat_str = Enum.join(Enum.map(strategies, fn str -> str.name() end), ", ")
+      Logger.info("Active rules for config #{config.id}: #{strat_str}")
+    end
+
+    defp feature_active?(configuration), do: configuration.is_active
+
+    defp get_strategies_for_configuration(configuration) do
+      Enum.filter(Strategies.get_all(), fn str -> str.name() in configuration.strategies end)
+    end
+  end
   @doc """
   Returns the list of features.
 
@@ -149,6 +184,8 @@ defmodule Toggly.Features do
   def change_feature(%Feature{} = feature) do
     Feature.changeset(feature, %{})
   end
+
+
 
   @doc """
   Returns the list of feature_configurations.

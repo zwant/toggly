@@ -8,6 +8,8 @@ defmodule Toggly.Features.FeatureConfiguration do
   @foreign_key_type :binary_id
   schema "feature_configurations" do
     field :is_active, :boolean, default: false
+    field :strategies, {:array, :string}
+    field :parameters, :map
     belongs_to :feature, Feature
 
     timestamps()
@@ -16,7 +18,7 @@ defmodule Toggly.Features.FeatureConfiguration do
   @doc false
   def changeset(%FeatureConfiguration{} = feature_configuration, attrs) do
     feature_configuration
-    |> cast(attrs, [:is_active])
+    |> cast(attrs, [:is_active, :strategies, :parameters])
     |> validate_required([:is_active])
   end
 end
