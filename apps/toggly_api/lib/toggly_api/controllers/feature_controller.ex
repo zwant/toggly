@@ -2,7 +2,7 @@ defmodule TogglyApi.FeatureController do
   use TogglyApi, :controller
   alias Toggly.Features
   alias Toggly.Features.Request
-
+  alias TogglyApi.FeatureParams
   require Logger
 
   action_fallback TogglyApi.FallbackController
@@ -13,28 +13,21 @@ defmodule TogglyApi.FeatureController do
   end
 
   defp check_and_render(conn, feature_name, params) do
-
-    true = validate_params(params)
-    request = %Request{timestamp: Map.get(params, "timestamp"),
-                       server_ip_address: Map.get(params, "server_ip_address"),
-                       user: %Request.User{user_id: Map.get(params, "user_id"),
-                                           username: Map.get(params, "username"),
-                                           region: Map.get(params, "region")}}
-    is_active = Features.Logic.is_enabled?(feature_name, request)
-    render conn, "is_active.json", is_active: is_active
-  end
-
-  defp validate_params(params) do
-    Enum.all?(params, fn {k, v} -> validate_single_param(k, v) end)
-  end
-
-  defp validate_single_param(param_name, value) do
-    case param_name do
-      "timestamp" ->
-        {result, _} = Calendar.DateTime.Parse.rfc3339_utc(value)
-        result == :ok
-      _ -> :ok
-    end
+    changeset = FeatureParams.changeset(%FeatureParams{}, params)
+    case changeset do
+          %{:params => validated_params, :valid? => true} ->
+             request = %Request{timestamp: validated_params |> Map.get("timestamp"),
+                                server_ip_address: validated_params |> Map.get("server_ip_address"),
+                                user: %Request.User{user_id: validated_params |> Map.get("user_id"),
+                                                    username: validated_params |> Map.get("username"),
+                                                    region: validated_params |> Map.get("region")}}
+             is_active = Features.Logic.is_enabled?(feature_name, request)
+             render conn, "is_active.json", is_active: is_active
+          _ ->
+              conn
+              |> put_status(400)
+              |> text("Error, wrong parameters supplied!")
+      end
   end
 
   def list(conn, _params) do

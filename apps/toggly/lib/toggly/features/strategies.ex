@@ -4,22 +4,24 @@ defmodule Toggly.Features.Strategies do
 
   defmodule ActivationStrategy do
     @callback name() :: String.t()
-    @callback parameters() :: [{String.t(), (%{} -> boolean)}]
+    @callback parameters() :: %{required(String.t()) => (%{} -> boolean)}
     @callback matches?(request :: Request.t(), parameters :: %{}) :: boolean
     @callback applies_to?(request :: Request.t()) :: boolean
 
     def validate_params?(strategies, parameters) do
-      Enum.all?(strategies,
-        fn str ->
-          Enum.all?(str.parameters(),
-            fn { param_name, the_function } ->
-              set_params_for_this_strat = Map.get(parameters, str.name(), %{})
-              case Map.has_key?(parameters, param_name) do
-                true -> the_function.(set_params_for_this_strat[param_name])
-                false -> true
-              end
-            end)
+      strategies
+        |> Enum.all?(fn str ->
+          set_strat_params = parameters |> Map.get(str.name(), %{})
+          str.parameters() |> Map.keys |> Enum.any?(fn x -> set_strat_params |> Map.has_key?(x) end) &&
+            str.parameters() |> Enum.all?(&validate_single_param(&1, set_strat_params))
         end)
+    end
+
+    defp validate_single_param({param_name, the_function}, params) do
+      case Map.has_key?(params, param_name) do
+        true -> the_function.(params[param_name])
+        false -> true
+      end
     end
 
     def evaluate(strategy, request, parameters) do
@@ -37,7 +39,7 @@ defmodule Toggly.Features.Strategies do
     @behaviour ActivationStrategy
 
     def name(), do: "Username"
-    def parameters(), do: [{"matches_exactly", fn param -> String.length(param) > 0 end}]
+    def parameters(), do: %{"matches_exactly" => fn param -> String.length(param) > 0 end}
 
     def applies_to?(request) do
       username = (request |> Map.get(:user, %{}) |> Map.get(:username))
@@ -51,8 +53,16 @@ defmodule Toggly.Features.Strategies do
   defmodule TimestampStrategy do
     @behaviour ActivationStrategy
 
+    defp validate_date_string(value) do
+      {result, _} = Calendar.DateTime.Parse.rfc3339_utc(value)
+      result == :ok
+    end
+
     def name(), do: "Timestamp"
-    def parameters(), do: ["before", "after", "between"]
+    def parameters(), do: %{"before" => &validate_date_string/1,
+                            "after" => &validate_date_string/1,
+                            "between" => fn param -> param |> Map.get("first", "") |> validate_date_string &&
+                                                       param |> Map.get("second", "") |> validate_date_string end}
 
     def applies_to?(request) do
       not request.timestamp in [nil, ""]

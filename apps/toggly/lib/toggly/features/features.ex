@@ -24,6 +24,11 @@ defmodule Toggly.Features do
       request_feature_enabled?(feature.configuration, request)
     end
 
+    def validate_feature_config_params?(strategy_names, incoming_params) do
+      get_strategies_with_names(strategy_names) |>
+        Strategies.ActivationStrategy.validate_params?(incoming_params)
+    end
+
     defp request_feature_enabled?(configuration, request = %Request{}) do
       strategies = get_strategies_for_configuration(configuration)
       log_active_strats(configuration, strategies)
@@ -40,7 +45,11 @@ defmodule Toggly.Features do
     defp feature_active?(configuration), do: configuration.is_active
 
     defp get_strategies_for_configuration(configuration) do
-      Enum.filter(Strategies.get_all(), fn str -> str.name() in configuration.strategies end)
+      get_strategies_with_names(configuration.strategies)
+    end
+
+    defp get_strategies_with_names(name_list) do
+      Enum.filter(Strategies.get_all(), fn str -> str.name() in name_list end)
     end
   end
   @doc """

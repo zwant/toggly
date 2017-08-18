@@ -12,6 +12,7 @@
 
 alias Toggly.Repo
 alias Toggly.Features.Feature
+alias Toggly.Features
 alias Toggly.Features.FeatureConfiguration
 
 Repo.delete_all Feature
@@ -21,10 +22,10 @@ Repo.delete_all FeatureConfiguration
 |> Ecto.Changeset.change
 |> Ecto.Changeset.put_assoc(:configuration, FeatureConfiguration.changeset(%FeatureConfiguration{}, %{is_active: true,
                                                                                                       strategies: ["Username", "IPAddress", "Timestamp"],
-                                                                                                      parameters: %{"Username":
-                                                                                                                      %{"matches_exactly": "svante"},
-                                                                                                                    "Timestamp":
-                                                                                                                      %{"after": "2015-01-23T23:50:07Z"}}}))
+                                                                                                      parameters: %{"Username" =>
+                                                                                                                      %{"matches_exactly" => "svante"},
+                                                                                                                    "Timestamp" =>
+                                                                                                                      %{"after" => "2015-01-23T23:50:07Z"}}}))
 |> Repo.insert!
 
 %Feature{label: "test2"}
@@ -36,15 +37,15 @@ Repo.delete_all FeatureConfiguration
 |> Ecto.Changeset.change
 |> Ecto.Changeset.put_assoc(:configuration, FeatureConfiguration.changeset(%FeatureConfiguration{}, %{is_active: true,
                                                                                                       strategies: ["Timestamp"],
-                                                                                                      parameters: %{"Timestamp":
-                                                                                                                      %{"between":
-                                                                                                                          %{"first": "2016-01-01T00:00:00Z",
-                                                                                                                            "second": "2016-12-31T23:59:59Z"}}}}))
+                                                                                                      parameters: %{"Timestamp" =>
+                                                                                                                      %{"between" =>
+                                                                                                                          %{"first" => "2016-01-01T00:00:00Z",
+                                                                                                                            "second" => "2016-12-31T23:59:59Z"}}}}))
 |> Repo.insert!
 
 %Feature{label: "only_svante"}
 |> Ecto.Changeset.change
 |> Ecto.Changeset.put_assoc(:configuration, FeatureConfiguration.changeset(%FeatureConfiguration{}, %{is_active: true,
                                                                                                       strategies: ["Username"],
-                                                                                                      parameters: %{"Username": %{"matches_exactly": "svante"}}}))
+                                                                                                      parameters: %{"Username" => %{"matches_exactly" => "svante"}}}))
 |> Repo.insert!
