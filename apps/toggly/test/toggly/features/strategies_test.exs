@@ -107,7 +107,7 @@ defmodule Toggly.StrategiesTest do
     end
 
     test "parameters are as expected" do
-      assert %{"matches_exactly" => _} = UsernameStrategy.parameters()
+      assert %{"matches_exactly" => _, "matches_regexp" => _} = UsernameStrategy.parameters()
     end
 
     test "applies to is true when request has a user with username", context do
@@ -130,10 +130,22 @@ defmodule Toggly.StrategiesTest do
       refute UsernameStrategy.matches?(context[:request], %{"matches_exactly" => "sv"})
     end
 
+    test "matches_regexp parameter matches when username is correct", context do
+      assert UsernameStrategy.matches?(context[:request], %{"matches_regexp" => "sv.*"})
+    end
+
+    test "matches_regexp parameter does not match when username is wrong", context do
+      refute UsernameStrategy.matches?(context[:request], %{"matches_regexp" => "$sv^"})
+    end
+
     test "validates param correctly", _context do
-      %{"matches_exactly" => validation_function} = UsernameStrategy.parameters()
-      refute validation_function.("")
-      assert validation_function.("svante")
+      %{"matches_exactly" => exact_validation_function,
+        "matches_regexp" => regexp_validation_function} = UsernameStrategy.parameters()
+      refute exact_validation_function.("")
+      assert exact_validation_function.("svante")
+
+      refute regexp_validation_function.("")
+      assert regexp_validation_function.("sv.*")
     end
   end
 

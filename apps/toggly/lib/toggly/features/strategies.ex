@@ -39,14 +39,26 @@ defmodule Toggly.Features.Strategies do
     @behaviour ActivationStrategy
 
     def name(), do: "Username"
-    def parameters(), do: %{"matches_exactly" => fn param -> String.length(param) > 0 end}
+    def parameters(), do: %{"matches_exactly" => fn param -> String.length(param) > 0 end,
+                            "matches_regexp" => fn param -> String.length(param) > 0 && regex?(param) end}
 
+    defp regex?(string_param) do
+      case Regex.compile(string_param) do
+        {:ok, _} -> true
+        _ -> false
+      end
+    end
     def applies_to?(request) do
       username = (request |> Map.get(:user, %{}) |> Map.get(:username))
       not username in [nil, ""]
     end
+
     def matches?(request, %{"matches_exactly" => exact_match}) do
       request.user.username == exact_match
+    end
+
+    def matches?(request, %{"matches_regexp" => regex_string}) do
+      Regex.compile!(regex_string) |> Regex.match?(request.user.username)
     end
   end
 
