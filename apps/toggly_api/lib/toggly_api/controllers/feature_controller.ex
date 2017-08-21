@@ -16,11 +16,7 @@ defmodule TogglyApi.FeatureController do
     changeset = FeatureParams.changeset(%FeatureParams{}, params)
     case changeset do
           %{:params => validated_params, :valid? => true} ->
-             request = %Request{timestamp: validated_params |> Map.get("timestamp"),
-                                server_ip_address: validated_params |> Map.get("server_ip_address"),
-                                user: %Request.User{user_id: validated_params |> Map.get("user_id"),
-                                                    username: validated_params |> Map.get("username"),
-                                                    region: validated_params |> Map.get("region")}}
+             request = struct(Request, Map.put(validated_params, :user, struct(Request.User, validated_params)))
              is_active = Features.Logic.is_enabled?(feature_name, request)
              render conn, "is_active.json", is_active: is_active
           _ ->
@@ -29,6 +25,16 @@ defmodule TogglyApi.FeatureController do
               |> text("Error, wrong parameters supplied!")
       end
   end
+
+  def to_struct(kind, attrs) do
+      struct = struct(kind)
+      Enum.reduce Map.to_list(struct), struct, fn {k, _}, acc ->
+        case Map.fetch(attrs, Atom.to_string(k)) do
+          {:ok, v} -> %{acc | k => v}
+          :error -> acc
+        end
+      end
+    end
 
   def list(conn, _params) do
     features = Features.list_features()
