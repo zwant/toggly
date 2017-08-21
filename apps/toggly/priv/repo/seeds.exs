@@ -12,7 +12,6 @@
 
 alias Toggly.Repo
 alias Toggly.Features.Feature
-alias Toggly.Features
 alias Toggly.Features.FeatureConfiguration
 
 Repo.delete_all Feature

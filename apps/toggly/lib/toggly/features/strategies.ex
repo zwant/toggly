@@ -30,7 +30,7 @@ defmodule Toggly.Features.Strategies do
         strategy.matches?(request, Map.get(parameters, strategy.name(), %{}))
       else
         Logger.info("Strategy #{strategy.name()} NOT applicable for request")
-        true
+        false
       end
     end
   end
@@ -70,13 +70,13 @@ defmodule Toggly.Features.Strategies do
     def matches?(request, %{"before" => before_time}) do
       {:ok, parsed_before_time} = Calendar.DateTime.Parse.rfc3339_utc(before_time)
       {:ok, parsed_request_time} = Calendar.DateTime.Parse.rfc3339_utc(request.timestamp)
-      parsed_request_time |> Calendar.Date.before?(parsed_before_time)
+      parsed_request_time |> Calendar.DateTime.before?(parsed_before_time)
     end
 
     def matches?(request, %{"after" => after_time}) do
       {:ok, parsed_after_time} = Calendar.DateTime.Parse.rfc3339_utc(after_time)
       {:ok, parsed_request_time} = Calendar.DateTime.Parse.rfc3339_utc(request.timestamp)
-      parsed_request_time |> Calendar.Date.after?(parsed_after_time)
+      parsed_request_time |> Calendar.DateTime.after?(parsed_after_time)
     end
 
     def matches?(request, %{"between" => %{"first" => first_time, "second" => second_time}}) do
@@ -84,8 +84,8 @@ defmodule Toggly.Features.Strategies do
       {:ok, parsed_second_time} = Calendar.DateTime.Parse.rfc3339_utc(second_time)
       {:ok, parsed_request_time} = Calendar.DateTime.Parse.rfc3339_utc(request.timestamp)
 
-      parsed_request_time |> Calendar.Date.after?(parsed_first_time)
-        && parsed_request_time |> Calendar.Date.before?(parsed_second_time)
+      parsed_request_time |> Calendar.DateTime.after?(parsed_first_time)
+        && parsed_request_time |> Calendar.DateTime.before?(parsed_second_time)
     end
   end
 

@@ -14,19 +14,62 @@ defmodule Toggly.Features do
   defmodule Logic do
     alias Toggly.Features
 
+    @doc """
+    Checks if the feature with the given `feature_label` is currently enabled.
+    Does not receive a request, so can only return on the global state of the feature toggle.
+
+    ## Parameters
+
+      - feature_label: `String` with the label for the feature.
+
+    ## Returns
+
+    `boolean`
+
+    """
     def is_enabled?(feature_label) do
-      feature = Features.get_feature_from_cache(feature_label)
-      feature_active?(feature.configuration)
+      case Features.get_feature_from_cache(feature_label) do
+        {:error, _} ->
+          create_disabled_feature(feature_label)
+          false
+        {:ok, feature} ->
+          feature_active?(feature.configuration)
+      end
     end
 
+    @doc """
+    Checks if the feature with the given `feature_label` is enabled for the given
+    `request`. It's up to each feature's configuration to determine how to inspect
+    the request contents.
+
+    ## Parameters
+
+      - feature_label: `String` with the label for the feature.
+      - request: `t:Toggly.Features.Request/0` with the label for the feature.
+
+    ## Returns
+
+    boolean
+
+    """
     def is_enabled?(feature_label, request = %Request{}) do
-      feature = Features.get_feature_from_cache(feature_label)
-      request_feature_enabled?(feature.configuration, request)
+      case Features.get_feature_from_cache(feature_label) do
+        {:error, _} ->
+          create_disabled_feature(feature_label)
+          false
+        {:ok, feature} ->
+          request_feature_enabled?(feature.configuration, request)
+      end
     end
 
     def validate_feature_config_params?(strategy_names, incoming_params) do
       get_strategies_with_names(strategy_names) |>
         Strategies.ActivationStrategy.validate_params?(incoming_params)
+    end
+
+    defp create_disabled_feature(feature_label) do
+      Features.create_feature(%{"label": feature_label,
+                                "configuration": %{"is_active": false}})
     end
 
     defp request_feature_enabled?(configuration, request = %Request{}) do
@@ -81,14 +124,14 @@ defmodule Toggly.Features do
       ** (Ecto.NoResultsError)
 
   """
-  def get_feature!(id) do
+  def get_feature(id) do
     Repo.one from feature in Feature,
       where: feature.id == ^id,
       left_join: configuration in assoc(feature, :configuration),
       preload: [configuration: configuration]
   end
 
-  def get_feature_by_label!(label) do
+  def get_feature_by_label(label) do
     Repo.one from feature in Feature,
       where: feature.label == ^label,
       left_join: configuration in assoc(feature, :configuration),
@@ -100,11 +143,13 @@ defmodule Toggly.Features do
     case Cachex.get(:apicache, label) do
       # No hit
       {:missing, _} ->
-        feature = get_feature_by_label!(label)
-        Cachex.set(:apicache, label, feature, [ ttl: :timer.seconds(1800)])
-        feature
+        case get_feature_by_label(label) do
+          nil -> {:error, "No result found"}
+          feature -> Cachex.set(:apicache, label, feature, [ ttl: :timer.seconds(1800)])
+                     {:ok, feature}
+        end
 
-      {:ok, result} -> result
+      {:ok, result} -> {:ok, result}
     end
   end
 

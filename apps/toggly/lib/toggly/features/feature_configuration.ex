@@ -8,8 +8,8 @@ defmodule Toggly.Features.FeatureConfiguration do
   @foreign_key_type :binary_id
   schema "feature_configurations" do
     field :is_active, :boolean, default: false
-    field :strategies, {:array, :string}
-    field :parameters, :map
+    field :strategies, {:array, :string}, default: []
+    field :parameters, :map, default: %{}
     belongs_to :feature, Feature
 
     timestamps()

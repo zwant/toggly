@@ -41,8 +41,10 @@ defmodule Toggly.Mixfile do
       {:ecto, "~> 2.1"},
       {:cachex, "~> 2.1"},
       {:poison, "~> 3.0"},
+      {:calendar, "~> 0.17.2"},
       {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false},
-      {:calendar, "~> 0.17.2"}
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.11", only: :dev}
     ]
   end
 

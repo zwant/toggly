@@ -64,7 +64,7 @@ defmodule Toggly.StrategiesTest do
     setup [:request_with_all_fields]
 
     test "Evaluate is true if request is NOT applicable", context do
-      assert Strategies.ActivationStrategy.evaluate(TestNeverAppliesStrategy,
+      refute Strategies.ActivationStrategy.evaluate(TestNeverAppliesStrategy,
         context[:request],
         %{})
     end
@@ -165,11 +165,11 @@ defmodule Toggly.StrategiesTest do
     end
 
     test "before parameter matches when timestamp is before it", context do
-      assert TimestampStrategy.matches?(context[:request], %{"before" => "2016-01-23T23:50:07Z"})
+      assert TimestampStrategy.matches?(context[:request], %{"before" => "2015-01-23T23:51:07Z"})
     end
 
     test "before parameter does not match when timestamp is after it", context do
-      refute TimestampStrategy.matches?(context[:request], %{"before" => "2014-01-23T23:50:07Z"})
+      refute TimestampStrategy.matches?(context[:request], %{"before" => "2015-01-23T23:49:07Z"})
     end
 
     test "after parameter matches when timestamp is after it", context do
@@ -181,8 +181,8 @@ defmodule Toggly.StrategiesTest do
     end
 
     test "between parameter matches when timestamp is between before and after", context do
-      assert TimestampStrategy.matches?(context[:request], %{"between" => %{"first" => "2012-01-23T23:50:07Z",
-                                                                            "second" => "2018-01-23T23:50:07Z"}})
+      assert TimestampStrategy.matches?(context[:request], %{"between" => %{"first" => "2015-01-23T23:50:01Z",
+                                                                            "second" => "2015-01-23T23:50:15Z"}})
     end
 
     test "between parameter does not match when timestamp is not between before and after", context do
