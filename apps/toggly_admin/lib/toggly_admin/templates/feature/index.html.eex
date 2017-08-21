@@ -1,0 +1,25 @@
+<div class="jumbotron">
+  <h2>Toggly Admin</h2>
+</div>
+
+<div class="row">
+  <div class="col-lg-6">
+    <h4>Features</h4>
+      <%= for feature <- @features do %>
+        <div class="card w-60">
+          <div class="card-body">
+            <h4 class="card-title"><%= feature.label %></h4>
+            <p class="card-text"></p>
+            <%= if feature.configuration.is_active do %>
+              <%= button("Disable", to: feature_path(@conn, :toggle, feature.label), method: :post, class: "btn btn-danger") %>
+            <%= else %>
+              <%= button("Enable", to: feature_path(@conn, :toggle, feature.label), method: :post, class: "btn btn-success") %>
+            <%= end %>
+          </div>
+          <div class="card-footer">
+      <small class="text-muted">Last updated <%= feature.configuration.updated_at %> </small>
+    </div>
+        </div>
+      <% end %>
+  </div>
+</div>

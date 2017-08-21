@@ -1,4 +1,4 @@
-defmodule TogglyAdmin.PageControllerTest do
+defmodule TogglyAdmin.FeatureControllerTest do
   use TogglyAdmin.ConnCase
 
   test "GET /", %{conn: conn} do

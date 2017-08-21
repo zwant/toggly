@@ -7,7 +7,7 @@ use Mix.Config
 # watchers to your application. For example, we use it
 # with brunch.io to recompile .js and .css sources.
 config :toggly_admin, TogglyAdmin.Endpoint,
-  http: [port: 4000],
+  http: [port: 4001],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
@@ -40,5 +40,3 @@ config :toggly_admin, TogglyAdmin.Endpoint,
       ~r{lib/toggly_admin/templates/.*(eex)$}
     ]
   ]
-
-

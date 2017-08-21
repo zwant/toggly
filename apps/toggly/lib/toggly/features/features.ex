@@ -67,6 +67,11 @@ defmodule Toggly.Features do
         Strategies.ActivationStrategy.validate_params?(incoming_params)
     end
 
+    def toggle_feature(feature_label) do
+      feature = Features.get_feature_by_label(feature_label)
+      Features.update_feature_configuration(feature.configuration, %{"is_active": !feature.configuration.is_active})
+    end
+
     defp create_disabled_feature(feature_label) do
       Features.create_feature(%{"label": feature_label,
                                 "configuration": %{"is_active": false}})

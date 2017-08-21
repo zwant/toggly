@@ -16,7 +16,8 @@ defmodule TogglyAdmin.Router do
   scope "/", TogglyAdmin do
     pipe_through :browser # Use the default browser stack
 
-    get "/", PageController, :index
+    get "/", FeatureController, :index
+    post "/:feature_name/toggle", FeatureController, :toggle
   end
 
   # Other scopes may use custom stacks.
