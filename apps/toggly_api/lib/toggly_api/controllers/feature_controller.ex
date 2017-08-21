@@ -16,7 +16,7 @@ defmodule TogglyApi.FeatureController do
     changeset = FeatureParams.changeset(%FeatureParams{}, params)
     case changeset do
           %{:params => validated_params, :valid? => true} ->
-             request = struct(Request, Map.put(validated_params, :user, struct(Request.User, validated_params)))
+             request = to_struct(Request, Map.put(validated_params, "user", to_struct(Request.User, validated_params)))
              is_active = Features.Logic.is_enabled?(feature_name, request)
              render conn, "is_active.json", is_active: is_active
           _ ->
